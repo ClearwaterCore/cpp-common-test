@@ -49,7 +49,6 @@ cpp_common_test_test_SOURCES := accesslogger.cpp \
                                 snmp_success_fail_count_table.cpp \
                                 statistic.cpp \
                                 timer_counter.cpp \
-                                timer_heap.cpp \
                                 unique.cpp \
                                 utils.cpp \
                                 zmq_lvc.cpp \
