@@ -196,10 +196,9 @@ TEST_F(TimerHeapTest, ManyTimers)
   }
 
   ASSERT_EQ(9000u, popped_timers.size());
-/*  ASSERT_TRUE(std::is_sorted(popped_timers.begin(),
+  ASSERT_TRUE(std::is_sorted(popped_timers.begin(),
                              popped_timers.end(),
-                             PopsBefore()));
-*/
+                             [](HeapableTimer* a, HeapableTimer* b) { return a->get_pop_time() < b->get_pop_time(); }));
   for (SimpleTimer* t: inserted_timers)
   {
     delete t;
