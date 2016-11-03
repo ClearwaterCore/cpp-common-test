@@ -7,6 +7,7 @@ cpp_common_test_test_SOURCES := accesslogger.cpp \
                                 base64.cpp \
                                 base_communication_monitor.cpp \
                                 baseresolver.cpp \
+                                cassandra_connection_pool.cpp \
                                 cassandra_store.cpp \
                                 chronosconnection.cpp \
                                 communicationmonitor.cpp \
@@ -17,21 +18,24 @@ cpp_common_test_test_SOURCES := accesslogger.cpp \
                                 dnsparser.cpp \
                                 exception_handler.cpp \
                                 health_checker.cpp \
+                                http_connection_pool.cpp \
+                                httpclient.cpp \
                                 httpconnection.cpp \
-                                httpresolver.cpp \
+                                a_record_resolver.cpp \
                                 httpstack.cpp \
                                 httpstack_utils.cpp \
-                                ipv6utils.cpp \
                                 json_alarms.cpp \
                                 load_monitor.cpp \
                                 localstore.cpp \
                                 log.cpp \
                                 logger.cpp \
                                 memcached_config.cpp \
+                                memcached_connection_pool.cpp \
                                 memcachedstore.cpp \
                                 memcachedstoreview.cpp \
                                 namespace_hop.cpp \
                                 realmmanager.cpp \
+                                resolver_test.cpp \
                                 saslogger.cpp \
                                 signalhandler.cpp \
                                 sip_string_to_request_type.cpp \
@@ -43,11 +47,13 @@ cpp_common_test_test_SOURCES := accesslogger.cpp \
                                 snmp_infinite_scalar_table.cpp \
                                 snmp_infinite_timer_count_table.cpp \
                                 snmp_row.cpp \
+                                snmp_ip_row.cpp \
                                 snmp_scalar.cpp \
                                 snmp_single_count_by_node_type_table.cpp \
                                 snmp_success_fail_count_table.cpp \
                                 statistic.cpp \
                                 timer_counter.cpp \
+                                timer_heap.cpp \
                                 unique.cpp \
                                 utils.cpp \
                                 zmq_lvc.cpp \
@@ -58,16 +64,23 @@ cpp_common_test_test_SOURCES := accesslogger.cpp \
                                 fakezmq.cpp \
                                 mock_sas.cpp \
                                 mockfreediameter.cpp \
+                                pthread_cond_var_helper.cpp \
                                 basetest.cpp \
                                 curl_interposer.cpp \
                                 test_main.cpp \
                                 test_interposer.cpp \
                                 alarm_test.cpp \
+                                astaire_resolver.cpp \
+                                baseresolver_test.cpp \
                                 chronosconnection_test.cpp \
                                 communicationmonitor_test.cpp \
+                                connection_pool_test.cpp \
+                                dnscachedresolver_test.cpp \
                                 diameterresolver_test.cpp \
                                 diameterstack_test.cpp \
+                                httpclient_test.cpp \
                                 httpconnection_test.cpp \
+                                httpresolver_test.cpp \
                                 httpstack_test.cpp \
                                 httpstack_utils_test.cpp \
                                 json_alarms_test.cpp \
@@ -75,7 +88,9 @@ cpp_common_test_test_SOURCES := accesslogger.cpp \
                                 logger_test.cpp \
                                 memcached_config_test.cpp \
                                 memcachedstorereview_test.cpp \
-                                realmmanager_test.cpp
+                                realmmanager_test.cpp \
+                                timer_heap_test.cpp \
+                                utils_test.cpp
 
 cpp_common_test_test_CPPFLAGS := -Wno-write-strings \
                                  -I../usr/include \
