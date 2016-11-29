@@ -138,6 +138,19 @@ class HttpConnectionBlacklistTest : public BaseTest
 
     fakecurl_responses["http://3.0.0.0:80/all_failure"] = CURLE_COULDNT_RESOLVE_HOST;
     fakecurl_responses["http://3.0.0.1:80/all_failure"] = CURLE_COULDNT_RESOLVE_HOST;
+
+    std::list<std::string> retry_after_header;
+    retry_after_header.push_back("Retry-After: 30");
+    fakecurl_responses["http://3.0.0.0:80/one_503_failure"] = Response(503, retry_after_header);
+    fakecurl_responses["http://3.0.0.1:80/one_503_failure"] = "<message>success</message>";
+
+    std::list<std::string> date_retry_after_header;
+    date_retry_after_header.push_back("Retry-After: Fri, 07 Nov 2014 23:59:59 GMT");
+    fakecurl_responses["http://3.0.0.0:80/one_date_503_failure"] = Response(503, date_retry_after_header);
+    fakecurl_responses["http://3.0.0.1:80/one_date_503_failure"] = "<message>success</message>";
+
+    fakecurl_responses["http://3.0.0.0:80/one_503_failure_no_retry_after"] = 503;
+    fakecurl_responses["http://3.0.0.1:80/one_503_failure_no_retry_after"] = "<message>success</message>";
   }
 
   ~HttpConnectionBlacklistTest()
@@ -206,6 +219,47 @@ TEST_F(HttpConnectionBlacklistTest, BlacklistTestOneFailure)
   _http->send_get("/one_failure", output, "", 0);
 }
 
+TEST_F(HttpConnectionBlacklistTest, BlacklistTestOne503Failure)
+{
+  std::vector<AddrInfo> targets = create_targets(2);
+
+  EXPECT_CALL(_resolver, resolve_iter(_,_,_)).
+    WillOnce(Return(new SimpleAddrIterator(targets)));
+  EXPECT_CALL(_resolver, blacklist(targets[0], 30)).Times(1);
+  EXPECT_CALL(_resolver, success(targets[1])).Times(1);
+
+  string output;
+  _http->send_get("/one_503_failure", output, "", 0);
+}
+
+// Note that the current impementation ignores the date in a Retry-After header
+TEST_F(HttpConnectionBlacklistTest, BlacklistTestOneDate503Failure)
+{
+  std::vector<AddrInfo> targets = create_targets(2);
+
+  EXPECT_CALL(_resolver, resolve_iter(_,_,_)).
+    WillOnce(Return(new SimpleAddrIterator(targets)));
+  EXPECT_CALL(_resolver, success(targets[0])).Times(1);
+  EXPECT_CALL(_resolver, success(targets[1])).Times(1);
+
+  string output;
+  _http->send_get("/one_date_503_failure", output, "", 0);
+}
+//
+// Note that the current impementation ignores the date in a Retry-After header
+TEST_F(HttpConnectionBlacklistTest, BlacklistTestOne503FailureNoRetryAfter)
+{
+  std::vector<AddrInfo> targets = create_targets(2);
+
+  EXPECT_CALL(_resolver, resolve_iter(_,_,_)).
+    WillOnce(Return(new SimpleAddrIterator(targets)));
+  EXPECT_CALL(_resolver, success(targets[0])).Times(1);
+  EXPECT_CALL(_resolver, success(targets[1])).Times(1);
+
+  string output;
+  _http->send_get("/one_503_failure_no_retry_after", output, "", 0);
+}
+
 TEST_F(HttpConnectionBlacklistTest, BlacklistTestAllFailure)
 {
   std::vector<AddrInfo> targets = create_targets(2);
@@ -227,7 +281,7 @@ TEST_F(HttpConnectionTest, SimpleKeyAuthGet)
   EXPECT_EQ(200, ret);
   EXPECT_EQ("<?xml version=\"1.0\" encoding=\"UTF-8\"><boring>Document</boring>", output);
 
-  Request& req = fakecurl_requests["http://10.42.42.42:80/blah/blah/blah"];
+  Request& req = fakecurl_requests["http://cyrus:80/blah/blah/blah"];
 
   EXPECT_EQ("GET", req._method);
   EXPECT_FALSE(req._httpauth & CURLAUTH_DIGEST) << req._httpauth;
@@ -245,7 +299,7 @@ TEST_F(HttpConnectionTest, GetWithHeadersAndUsername)
   EXPECT_EQ(200, ret);
   EXPECT_EQ("<?xml version=\"1.0\" encoding=\"UTF-8\"><boring>Document</boring>", output);
 
-  Request& req = fakecurl_requests["http://10.42.42.42:80/blah/blah/blah"];
+  Request& req = fakecurl_requests["http://cyrus:80/blah/blah/blah"];
 
   EXPECT_EQ("GET", req._method);
   EXPECT_FALSE(req._httpauth & CURLAUTH_DIGEST) << req._httpauth;
@@ -404,7 +458,7 @@ TEST_F(HttpConnectionTest, SASCorrelationHeader)
 
   _http->send_get("/blah/blah/blah", output, "gandalf", 0);
 
-  Request& req = fakecurl_requests["http://10.42.42.42:80/blah/blah/blah"];
+  Request& req = fakecurl_requests["http://cyrus:80/blah/blah/blah"];
 
   // The CURL request should contain an X-SAS-HTTP-Branch-ID whose value is a
   // UUID.
@@ -471,10 +525,10 @@ TEST_F(HttpConnectionTest, ParseHostPortIPv6)
                        _cm);
 
   string output;
-  long ret = http2.send_get("/blah/blah/blah", output, "gandalf", 0);
+  fakecurl_responses["http://[1::1]:80/ipv6get"] = CURLE_OK;
+  long ret = http2.send_get("/ipv6get", output, "gandalf", 0);
 
   EXPECT_EQ(200, ret);
-  EXPECT_EQ("<?xml version=\"1.0\" encoding=\"UTF-8\"><boring>Document</boring>", output);
 }
 
 TEST_F(HttpConnectionTest, BasicResolverTest)
